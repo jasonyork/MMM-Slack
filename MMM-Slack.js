@@ -1,7 +1,9 @@
 Module.register('MMM-Slack', {
   defaults: {
     showLatestMessageOnStartup: false,
-    showUserName: true
+    showUserName: true,
+    messageMode: 'random',  // or 'latest'
+    updateRate: 10000
   },
 
   getStyles: function() {
@@ -14,7 +16,7 @@ Module.register('MMM-Slack', {
     var self = this;
     setInterval(function() {
       self.updateDom(1000);
-    }, 10000);
+    }, this.config.updateRate);
   },
 
   openSlackConnection: function() {
@@ -36,12 +38,15 @@ Module.register('MMM-Slack', {
     var messageElement = document.createElement('div');
     messageElement.className = 'light xlarge';
     if (this.slackMessages.length > 0) {
-      var randomMessageId = Math.floor(Math.random() * this.slackMessages.length);
-      messageElement.innerHTML = this.slackMessages[randomMessageId].message;
+      if (this.config.messageMode == 'random')
+        var messageId = Math.floor(Math.random() * this.slackMessages.length);
+      else if (this.config.messageMode == 'latest')
+        var messageId = 0;
+      messageElement.innerHTML = this.slackMessages[messageId].message;
       if (this.config.showUserName) {
         var userElement = document.createElement('p');
         userElement.className = 'user';
-        userElement.innerHTML = '@' + this.slackMessages[randomMessageId].user;
+        userElement.innerHTML = '@' + this.slackMessages[messageId].user;
         messageElement.appendChild(userElement);
       }
     }
